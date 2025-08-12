@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Plus, X, MapPin, DollarSign, Camera, Save, Eye } from "lucide-react"
+import { Plus, X, MapPin, DollarSign, Camera, Save, Eye, Upload, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { TripPreview } from "./trip-preview"
 
@@ -46,6 +48,8 @@ interface TripData {
   basePrice: number
   discount: number
   groupLeader: string
+  coverImages: string[]
+  galleryImages: string[]
 }
 
 export function CreateTrip() {
@@ -67,6 +71,8 @@ export function CreateTrip() {
     basePrice: 0,
     discount: 0,
     groupLeader: "",
+    coverImages: [],
+    galleryImages: [],
   })
   const [itineraryItems, setItineraryItems] = useState<any[]>([])
   const [pricingCategories, setPricingCategories] = useState<any[]>([])
@@ -146,6 +152,37 @@ export function CreateTrip() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, type: "cover" | "gallery") => {
+    const files = event.target.files
+    if (!files) return
+
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const imageUrl = e.target?.result as string
+          setTripData((prev) => ({
+            ...prev,
+            [type === "cover" ? "coverImages" : "galleryImages"]: [
+              ...prev[type === "cover" ? "coverImages" : "galleryImages"],
+              imageUrl,
+            ],
+          }))
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+  }
+
+  const removeImage = (index: number, type: "cover" | "gallery") => {
+    setTripData((prev) => ({
+      ...prev,
+      [type === "cover" ? "coverImages" : "galleryImages"]: prev[
+        type === "cover" ? "coverImages" : "galleryImages"
+      ].filter((_, i) => i !== index),
+    }))
   }
 
   return (
@@ -535,11 +572,82 @@ export function CreateTrip() {
                   <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Cover Images</h3>
                   <p className="text-gray-600 mb-4">Add high-quality images that showcase your trip experience</p>
-                  <Button onClick={() => alert("Image upload functionality")}>
-                    <Plus className="mr-2 h-4 w-4" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleImageUpload(e, "cover")}
+                    className="hidden"
+                    id="cover-upload"
+                  />
+                  <Button onClick={() => document.getElementById("cover-upload")?.click()}>
+                    <Upload className="mr-2 h-4 w-4" />
                     Upload Images
                   </Button>
                 </div>
+                {tripData.coverImages.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {tripData.coverImages.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={image || "/placeholder.svg"}
+                          alt={`Cover ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImage(index, "cover")}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Gallery Images</h3>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Gallery Images</h3>
+                  <p className="text-gray-600 mb-4">Add additional images to showcase different aspects of your trip</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleImageUpload(e, "gallery")}
+                    className="hidden"
+                    id="gallery-upload"
+                  />
+                  <Button variant="outline" onClick={() => document.getElementById("gallery-upload")?.click()}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Gallery Images
+                  </Button>
+                </div>
+                {tripData.galleryImages.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {tripData.galleryImages.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={image || "/placeholder.svg"}
+                          alt={`Gallery ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImage(index, "gallery")}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

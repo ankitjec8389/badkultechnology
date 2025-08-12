@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { MapPin, Calendar, Users, DollarSign, Star, Clock } from "lucide-react"
+import { MapPin, Calendar, Users, DollarSign, Star, Clock, Camera } from "lucide-react"
 
 interface TripPreviewProps {
   tripData: {
@@ -21,6 +21,8 @@ interface TripPreviewProps {
     basePrice: number
     discount: number
     groupLeader: string
+    coverImages: string[]
+    galleryImages: string[]
   }
   selectedMoods: string[]
   itineraryItems: any[]
@@ -67,29 +69,97 @@ export function TripPreview({ tripData, selectedMoods, itineraryItems, pricingCa
 
         <div className="space-y-4 lg:space-y-6">
           {/* Hero Section */}
-          <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 lg:p-6 text-white">
-            <div className="absolute inset-0 bg-black/20 rounded-lg"></div>
-            <div className="relative z-10">
-              <h1 className="text-xl lg:text-2xl font-bold mb-2">{tripData.title || "Untitled Trip"}</h1>
-              <div className="flex flex-wrap gap-2 lg:gap-4 text-sm">
-                <div className="flex items-center">
-                  <Calendar className="mr-1 h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    {formatDate(tripData.startDate)} - {formatDate(tripData.endDate)}
-                  </span>
-                  <span className="sm:hidden">{formatDate(tripData.startDate)}</span>
-                </div>
-                <div className="flex items-center">
-                  <Clock className="mr-1 h-4 w-4" />
-                  {getDuration()}
-                </div>
-                <div className="flex items-center">
-                  <Users className="mr-1 h-4 w-4" />
-                  {tripData.minGroup || 0}-{tripData.maxGroup || 0} people
+          <div className="relative rounded-lg overflow-hidden">
+            {tripData.coverImages && tripData.coverImages.length > 0 ? (
+              <div className="relative h-64 lg:h-80">
+                <img
+                  src={tripData.coverImages[0] || "/placeholder.svg"}
+                  alt={tripData.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6 text-white">
+                  <h1 className="text-xl lg:text-2xl font-bold mb-2">{tripData.title || "Untitled Trip"}</h1>
+                  <div className="flex flex-wrap gap-2 lg:gap-4 text-sm">
+                    <div className="flex items-center">
+                      <Calendar className="mr-1 h-4 w-4" />
+                      <span className="hidden sm:inline">
+                        {formatDate(tripData.startDate)} - {formatDate(tripData.endDate)}
+                      </span>
+                      <span className="sm:hidden">{formatDate(tripData.startDate)}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="mr-1 h-4 w-4" />
+                      {getDuration()}
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="mr-1 h-4 w-4" />
+                      {tripData.minGroup || 0}-{tripData.maxGroup || 0} people
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 lg:p-6 text-white">
+                <div className="absolute inset-0 bg-black/20 rounded-lg"></div>
+                <div className="relative z-10">
+                  <h1 className="text-xl lg:text-2xl font-bold mb-2">{tripData.title || "Untitled Trip"}</h1>
+                  <div className="flex flex-wrap gap-2 lg:gap-4 text-sm">
+                    <div className="flex items-center">
+                      <Calendar className="mr-1 h-4 w-4" />
+                      <span className="hidden sm:inline">
+                        {formatDate(tripData.startDate)} - {formatDate(tripData.endDate)}
+                      </span>
+                      <span className="sm:hidden">{formatDate(tripData.startDate)}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="mr-1 h-4 w-4" />
+                      {getDuration()}
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="mr-1 h-4 w-4" />
+                      {tripData.minGroup || 0}-{tripData.maxGroup || 0} people
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+
+          {(tripData.coverImages?.length > 1 || tripData.galleryImages?.length > 0) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <Camera className="mr-2 h-5 w-5" />
+                  Photo Gallery
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {/* Show additional cover images */}
+                  {tripData.coverImages?.slice(1).map((image, index) => (
+                    <div key={`cover-${index}`} className="aspect-square rounded-lg overflow-hidden">
+                      <img
+                        src={image || "/placeholder.svg"}
+                        alt={`Cover ${index + 2}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                  {/* Show gallery images */}
+                  {tripData.galleryImages?.map((image, index) => (
+                    <div key={`gallery-${index}`} className="aspect-square rounded-lg overflow-hidden">
+                      <img
+                        src={image || "/placeholder.svg"}
+                        alt={`Gallery ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Mood Tags */}
           {selectedMoods.length > 0 && (
