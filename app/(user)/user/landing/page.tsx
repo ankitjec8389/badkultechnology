@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, MapPin, Users, Star, TrendingUp } from "lucide-react"
+import { Search, MapPin, Users, Star, TrendingUp, Navigation, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -60,6 +60,9 @@ export default function LandingPage() {
   const [destinationMonth, setDestinationMonth] = useState("")
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [searchMode, setSearchMode] = useState<"mood" | "destination">("mood")
+  const [currentLocation, setCurrentLocation] = useState<string>("")
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
+  const [locationError, setLocationError] = useState<string>("")
   const router = useRouter()
 
   const handleMoodToggle = (moodId: string) => {
@@ -126,6 +129,64 @@ export default function LandingPage() {
     return moodThemes[selectedMoods[0]] || "from-blue-600 to-purple-700"
   }
 
+  const getCurrentLocation = async () => {
+    setIsLoadingLocation(true)
+    setLocationError("")
+
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by this browser")
+      setIsLoadingLocation(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords
+
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
+          )
+
+          if (response.ok) {
+            const data = await response.json()
+            const city = data.city || data.locality || data.principalSubdivision || "Unknown Location"
+            setCurrentLocation(city)
+            setDestinationQuery(city)
+          } else {
+            setLocationError("Unable to get location details")
+          }
+        } catch (error) {
+          setLocationError("Error getting location details")
+        } finally {
+          setIsLoadingLocation(false)
+        }
+      },
+      (error) => {
+        setIsLoadingLocation(false)
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError("Location access denied by user")
+            break
+          case error.POSITION_UNAVAILABLE:
+            setLocationError("Location information is unavailable")
+            break
+          case error.TIMEOUT:
+            setLocationError("Location request timed out")
+            break
+          default:
+            setLocationError("An unknown error occurred")
+            break
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000,
+      },
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -174,6 +235,19 @@ export default function LandingPage() {
                   className="flex-1 border-0 text-lg px-4 py-4 focus:ring-0 focus:outline-none"
                 />
                 <Button
+                  onClick={getCurrentLocation}
+                  disabled={isLoadingLocation}
+                  variant="ghost"
+                  className="px-3 py-2 text-gray-500 hover:text-gray-700"
+                  title="Use current location"
+                >
+                  {isLoadingLocation ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Navigation className="w-5 h-5" />
+                  )}
+                </Button>
+                <Button
                   onClick={handleUniversalSearch}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold"
                 >
@@ -181,9 +255,40 @@ export default function LandingPage() {
                 </Button>
               </div>
 
+              {currentLocation && (
+                <div className="absolute top-full left-0 right-0 mt-1">
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    Current location: {currentLocation}
+                  </Badge>
+                </div>
+              )}
+
+              {locationError && (
+                <div className="absolute top-full left-0 right-0 mt-1">
+                  <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+                    {locationError}
+                  </Badge>
+                </div>
+              )}
+
               {/* Search Suggestions */}
               {showSuggestions && (
                 <div className="absolute top-full left-0 right-0 bg-white rounded-xl shadow-xl mt-2 p-4 z-10">
+                  {currentLocation && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">Your Location</h4>
+                      <Badge
+                        variant="outline"
+                        className="cursor-pointer hover:bg-blue-100 bg-blue-50 border-blue-200"
+                        onClick={() => setUniversalQuery(`trips from ${currentLocation}`)}
+                      >
+                        <MapPin className="w-3 h-3 mr-1" />
+                        Trips from {currentLocation}
+                      </Badge>
+                    </div>
+                  )}
+
                   <div className="mb-4">
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Popular Searches</h4>
                     <div className="flex flex-wrap gap-2">
@@ -340,11 +445,41 @@ export default function LandingPage() {
                           placeholder="Enter city, state, or country"
                           value={destinationQuery}
                           onChange={(e) => setDestinationQuery(e.target.value)}
-                          className="pl-10 py-3 text-lg"
+                          className="pl-10 pr-12 py-3 text-lg"
                         />
+                        <Button
+                          onClick={getCurrentLocation}
+                          disabled={isLoadingLocation}
+                          variant="ghost"
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 px-2 py-1 text-gray-500 hover:text-gray-700"
+                          title="Use current location"
+                        >
+                          {isLoadingLocation ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Navigation className="w-4 h-4" />
+                          )}
+                        </Button>
                       </div>
                     </div>
                   </div>
+
+                  {currentLocation && (
+                    <div className="mb-4">
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        Using current location: {currentLocation}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {locationError && (
+                    <div className="mb-4">
+                      <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+                        {locationError}
+                      </Badge>
+                    </div>
+                  )}
 
                   <Button
                     onClick={handleDestinationSearch}
