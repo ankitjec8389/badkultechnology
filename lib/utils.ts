@@ -1,6 +1,11 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+export function cn(...inputs: Array<ClassValue>) {
+  return twMerge(clsx(inputs));
 }
+
+export const ENDPOINTS = {
+  GET_POST: '/posts',
+  // Add more endpoints as needed
+} as const;

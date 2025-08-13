@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Plus, X, MapPin, DollarSign, Camera, Save, Eye, Upload, Trash2 } from "lucide-react"
+import { Plus, X, MapPin, DollarSign, Camera, Eye, Upload, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { TripPreview } from "./trip-preview"
 
@@ -50,6 +50,7 @@ interface TripData {
   groupLeader: string
   coverImages: string[]
   galleryImages: string[]
+  exclusions: string[]
 }
 
 export function CreateTrip() {
@@ -73,10 +74,12 @@ export function CreateTrip() {
     groupLeader: "",
     coverImages: [],
     galleryImages: [],
+    exclusions: [],
   })
   const [itineraryItems, setItineraryItems] = useState<any[]>([])
   const [pricingCategories, setPricingCategories] = useState<any[]>([])
   const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>([])
+  const [exclusions, setExclusions] = useState<string[]>([])
 
   const toggleMood = (mood: string) => {
     if (selectedMoods.length >= 5 && !selectedMoods.includes(mood)) {
@@ -185,54 +188,55 @@ export function CreateTrip() {
     }))
   }
 
+  const addExclusion = (value: string) => {
+    if (!exclusions.includes(value)) {
+      setExclusions([...exclusions, value])
+    }
+  }
+
   return (
-    <div className="space-y-6 p-4 lg:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Create Trip</h1>
-          <p className="text-gray-600 mt-1">Create a new trip experience for travelers</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Create Trip</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Create a new trip experience for travelers</p>
         </div>
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4 sm:mt-0">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <TripPreview
             tripData={tripData}
             selectedMoods={selectedMoods}
             itineraryItems={itineraryItems}
             pricingCategories={pricingCategories}
             faqs={faqs}
+            exclusions={exclusions}
           />
-          <Button
-            variant="outline"
-            onClick={handleSaveDraft}
-            disabled={isLoading}
-            className="w-full sm:w-auto bg-transparent"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            {isLoading ? "Saving..." : "Save Draft"}
-          </Button>
-          <Button onClick={handleSubmitForReview} disabled={isLoading} className="w-full sm:w-auto">
-            {isLoading ? "Submitting..." : "Submit for Review"}
+          <Button onClick={handleSaveDraft} disabled={isLoading} className="w-full sm:w-auto">
+            {isLoading ? "Saving..." : "Save Trip"}
           </Button>
         </div>
       </div>
 
-      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
-          <TabsTrigger value="basic" className="text-xs lg:text-sm">
-            Basic Info
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto p-1">
+          <TabsTrigger value="basic" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+            Basic
           </TabsTrigger>
-          <TabsTrigger value="itinerary" className="text-xs lg:text-sm">
+          <TabsTrigger value="itinerary" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             Itinerary
           </TabsTrigger>
-          <TabsTrigger value="pricing" className="text-xs lg:text-sm">
+          <TabsTrigger value="pricing" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             Pricing
           </TabsTrigger>
-          <TabsTrigger value="media" className="text-xs lg:text-sm">
+          <TabsTrigger value="media" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             Media
           </TabsTrigger>
-          <TabsTrigger value="faqs" className="text-xs lg:text-sm">
+          <TabsTrigger value="exclusions" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+            Exclusions
+          </TabsTrigger>
+          <TabsTrigger value="faqs" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             FAQs
           </TabsTrigger>
-          <TabsTrigger value="review" className="text-xs lg:text-sm">
+          <TabsTrigger value="review" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             Review
           </TabsTrigger>
         </TabsList>
@@ -253,7 +257,7 @@ export function CreateTrip() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="startDate">Start Date *</Label>
                   <Input
@@ -274,7 +278,7 @@ export function CreateTrip() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="minGroup">Minimum Group Size</Label>
                   <Input
@@ -297,7 +301,7 @@ export function CreateTrip() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="minAge">Minimum Age</Label>
                   <Input
@@ -389,7 +393,7 @@ export function CreateTrip() {
               <CardTitle>Trip Itinerary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="startLocation">Start Location</Label>
                   <Input
@@ -459,7 +463,7 @@ export function CreateTrip() {
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                           <Input placeholder="Title" />
                           <Input placeholder="Location" />
                         </div>
@@ -478,7 +482,7 @@ export function CreateTrip() {
               <CardTitle>Trip Pricing</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="basePrice">Base Price (per person)</Label>
                   <div className="relative">
@@ -508,7 +512,10 @@ export function CreateTrip() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Pricing Categories</h3>
                 {pricingCategories.map((category, index) => (
-                  <div key={category.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
+                  <div
+                    key={category.id}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-4 border rounded-lg"
+                  >
                     <div className="space-y-2">
                       <Label>Category</Label>
                       <Select>
@@ -586,21 +593,21 @@ export function CreateTrip() {
                   </Button>
                 </div>
                 {tripData.coverImages.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     {tripData.coverImages.map((image, index) => (
                       <div key={index} className="relative group">
                         <img
                           src={image || "/placeholder.svg"}
                           alt={`Cover ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
+                          className="w-full h-24 sm:h-32 object-cover rounded-lg"
                         />
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 sm:top-2 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 sm:h-8 sm:w-8"
                           onClick={() => removeImage(index, "cover")}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
                         </Button>
                       </div>
                     ))}
@@ -609,11 +616,13 @@ export function CreateTrip() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Gallery Images</h3>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Gallery Images</h3>
-                  <p className="text-gray-600 mb-4">Add additional images to showcase different aspects of your trip</p>
+                <h3 className="text-base sm:text-lg font-semibold">Gallery Images</h3>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-8 text-center">
+                  <Camera className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Upload Gallery Images</h3>
+                  <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
+                    Add additional images to showcase different aspects of your trip
+                  </p>
                   <input
                     type="file"
                     accept="image/*"
@@ -622,27 +631,31 @@ export function CreateTrip() {
                     className="hidden"
                     id="gallery-upload"
                   />
-                  <Button variant="outline" onClick={() => document.getElementById("gallery-upload")?.click()}>
-                    <Upload className="mr-2 h-4 w-4" />
+                  <Button
+                    variant="outline"
+                    onClick={() => document.getElementById("gallery-upload")?.click()}
+                    className="w-full sm:w-auto text-sm"
+                  >
+                    <Upload className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                     Upload Gallery Images
                   </Button>
                 </div>
                 {tripData.galleryImages.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     {tripData.galleryImages.map((image, index) => (
                       <div key={index} className="relative group">
                         <img
                           src={image || "/placeholder.svg"}
                           alt={`Gallery ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
+                          className="w-full h-24 sm:h-32 object-cover rounded-lg"
                         />
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 sm:top-2 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 sm:h-8 sm:w-8"
                           onClick={() => removeImage(index, "gallery")}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
                         </Button>
                       </div>
                     ))}
@@ -651,6 +664,116 @@ export function CreateTrip() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="exclusions" className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Trip Exclusions</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Specify what is not included in your trip package to set clear expectations for travelers.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="exclusions-input">Add Exclusion</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="exclusions-input"
+                    placeholder="e.g., International flights, Travel insurance, Personal expenses"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        const input = e.target as HTMLInputElement
+                        const value = input.value.trim()
+                        if (value && !exclusions.includes(value)) {
+                          setExclusions([...exclusions, value])
+                          input.value = ""
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById("exclusions-input") as HTMLInputElement
+                      const value = input.value.trim()
+                      if (value && !exclusions.includes(value)) {
+                        setExclusions([...exclusions, value])
+                        input.value = ""
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {exclusions.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Current Exclusions</Label>
+                  <div className="space-y-2">
+                    {exclusions.map((exclusion, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <X className="h-4 w-4 text-red-500" />
+                          <span className="text-sm">{exclusion}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setExclusions(exclusions.filter((_, i) => i !== index))
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                <h4 className="font-medium text-blue-900 mb-2 text-sm sm:text-base">Common Exclusions</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    "International flights",
+                    "Travel insurance",
+                    "Personal expenses",
+                    "Visa fees",
+                    "Airport transfers",
+                    "Optional activities",
+                    "Alcoholic beverages",
+                    "Laundry services",
+                    "Tips and gratuities",
+                    "Medical expenses",
+                  ].map((commonExclusion) => (
+                    <Button
+                      key={commonExclusion}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="justify-start text-xs bg-transparent"
+                      onClick={() => {
+                        if (!exclusions.includes(commonExclusion)) {
+                          setExclusions([...exclusions, commonExclusion])
+                        }
+                      }}
+                      disabled={exclusions.includes(commonExclusion)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      {commonExclusion}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="faqs" className="space-y-6">
