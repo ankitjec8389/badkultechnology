@@ -25,6 +25,9 @@ import {
   Eye,
   Heart,
   Share2,
+  Settings,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 
 // Mock data for trips being compared
@@ -151,6 +154,7 @@ export function CompareTrips() {
   const [trips, setTrips] = useState(mockTrips)
   const [categories, setCategories] = useState(defaultCategories)
   const [selectedCategories, setSelectedCategories] = useState<string[]>(defaultCategories.map((cat) => cat.id))
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   const removeTrip = (tripId: string) => {
     setTrips(trips.filter((trip) => trip.id !== tripId))
@@ -173,15 +177,39 @@ export function CompareTrips() {
   }
 
   const renderComparisonRow = (label: string, values: (string | React.ReactElement)[], highlight = false) => (
-    <div
-      className={`grid grid-cols-${trips.length + 1} gap-4 py-3 border-b border-gray-100 ${highlight ? "bg-blue-50" : ""}`}
-    >
-      <div className="font-medium text-gray-700 text-sm">{label}</div>
-      {values.map((value, index) => (
-        <div key={index} className="text-sm text-gray-900">
-          {value}
+    <div className={`${highlight ? "bg-blue-50" : ""} border-b border-gray-100`}>
+      {/* Mobile Layout */}
+      <div className="block md:hidden">
+        <div className="font-medium text-gray-700 text-sm p-3 bg-gray-50 border-b">{label}</div>
+        <div className="divide-y divide-gray-100">
+          {values.map((value, index) => (
+            <div key={index} className="p-3 flex items-start justify-between">
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={trips[index]?.organizerLogo || "/placeholder.svg"} alt={trips[index]?.organizer} />
+                  <AvatarFallback className="text-xs">{trips[index]?.organizer?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-gray-600 font-medium">{trips[index]?.title}</span>
+              </div>
+              <div className="text-sm text-gray-900 text-right flex-shrink-0 ml-2">{value}</div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden md:block">
+        <div className="overflow-x-auto">
+          <div className="flex min-w-max py-3">
+            <div className="font-medium text-gray-700 text-sm w-48 flex-shrink-0 px-4">{label}</div>
+            {values.map((value, index) => (
+              <div key={index} className="text-sm text-gray-900 w-64 flex-shrink-0 px-4">
+                {value}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 
@@ -476,11 +504,11 @@ export function CompareTrips() {
 
   if (trips.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 py-4 md:py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🔍</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">No trips to compare</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">No trips to compare</h2>
             <p className="text-gray-600 mb-6">Add some trips to your comparison to get started</p>
             <Button>Browse Trips</Button>
           </div>
@@ -490,78 +518,149 @@ export function CompareTrips() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Compare Trips</h1>
-          <p className="text-gray-600">Compare multiple trips side by side to make the best choice</p>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Compare Trips</h1>
+          <p className="text-gray-600 text-sm md:text-base">
+            Compare multiple trips side by side to make the best choice
+          </p>
         </div>
 
-        {/* Trip Cards Header */}
-        <div className={`grid grid-cols-${trips.length + 1} gap-4 mb-6`}>
-          <div className="space-y-4">
-            <div className="h-48"></div>
-            <div className="space-y-2">
-              <h3 className="font-semibold text-gray-900">Customize Comparison</h3>
-              <p className="text-sm text-gray-600">Drag to reorder categories</p>
-            </div>
+        <div className="block md:hidden mb-6">
+          <div className="flex space-x-4 overflow-x-auto pb-4">
+            {trips.map((trip) => (
+              <Card key={trip.id} className="relative flex-shrink-0 w-72">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 z-10"
+                  onClick={() => removeTrip(trip.id)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+
+                <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
+                  <img
+                    src={trip.coverImage || "/placeholder.svg"}
+                    alt={trip.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3 mb-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={trip.organizerLogo || "/placeholder.svg"} alt={trip.organizer} />
+                      <AvatarFallback>{trip.organizer.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">{trip.title}</h3>
+                      <p className="text-xs text-gray-600">{trip.organizer}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-lg font-bold text-green-600">₹{trip.price.toLocaleString()}</div>
+                    <div className="flex space-x-1">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Heart className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+        </div>
 
-          {trips.map((trip) => (
-            <Card key={trip.id} className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2 z-10"
-                onClick={() => removeTrip(trip.id)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-
-              <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
-                <img
-                  src={trip.coverImage || "/placeholder.svg"}
-                  alt={trip.title}
-                  className="w-full h-full object-cover"
-                />
+        <div className="hidden md:block mb-6">
+          <div className="overflow-x-auto">
+            <div className="flex min-w-max space-x-4">
+              <div className="w-48 flex-shrink-0 space-y-4">
+                <div className="h-48"></div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-gray-900">Customize Comparison</h3>
+                  <p className="text-sm text-gray-600">Drag to reorder categories</p>
+                </div>
               </div>
 
-              <CardContent className="p-4">
-                <div className="flex items-start space-x-3 mb-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={trip.organizerLogo || "/placeholder.svg"} alt={trip.organizer} />
-                    <AvatarFallback>{trip.organizer.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">{trip.title}</h3>
-                    <p className="text-xs text-gray-600">{trip.organizer}</p>
-                  </div>
-                </div>
+              {trips.map((trip) => (
+                <Card key={trip.id} className="relative w-64 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 z-10"
+                    onClick={() => removeTrip(trip.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
 
-                <div className="flex items-center justify-between">
-                  <div className="text-lg font-bold text-green-600">₹{trip.price.toLocaleString()}</div>
-                  <div className="flex space-x-1">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Heart className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
+                  <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
+                    <img
+                      src={trip.coverImage || "/placeholder.svg"}
+                      alt={trip.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3 mb-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={trip.organizerLogo || "/placeholder.svg"} alt={trip.organizer} />
+                        <AvatarFallback>{trip.organizer.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">{trip.title}</h3>
+                        <p className="text-xs text-gray-600">{trip.organizer}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-bold text-green-600">₹{trip.price.toLocaleString()}</div>
+                      <div className="flex space-x-1">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Category Customization Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
+        <div className="block md:hidden mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className="w-full justify-between"
+          >
+            <div className="flex items-center space-x-2">
+              <Settings className="h-4 w-4" />
+              <span>Customize Comparison</span>
+            </div>
+            {showMobileFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className={`lg:block ${showMobileFilters ? "block" : "hidden"} w-full lg:w-80 flex-shrink-0`}>
+            <Card className="lg:sticky lg:top-4">
               <CardHeader>
                 <CardTitle className="text-lg">Comparison Categories</CardTitle>
               </CardHeader>
@@ -600,8 +699,7 @@ export function CompareTrips() {
             </Card>
           </div>
 
-          {/* Comparison Table */}
-          <div className="lg:col-span-3">
+          <div className="flex-1 min-w-0">
             <Card>
               <div className="divide-y divide-gray-200">
                 {categories.map((category) => renderCategorySection(category.id))}
