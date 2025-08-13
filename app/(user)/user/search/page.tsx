@@ -814,7 +814,7 @@ export default function SearchPage() {
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
-            <Link href="/landing" className="flex items-center space-x-2 sm:space-x-3">
+            <Link href="/user/landing" className="flex items-center space-x-2 sm:space-x-3">
               <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
