@@ -98,7 +98,7 @@ export default function LandingPage() {
         month: destinationMonth,
         type: "destination",
       })
-      router.push(`/search?${params.toString()}`)
+      router.push(`/user/search?${params.toString()}`)
     }
   }
 
