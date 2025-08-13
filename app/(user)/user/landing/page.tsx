@@ -87,7 +87,7 @@ export default function LandingPage() {
         month: selectedMonth,
         type: "mood",
       })
-      router.push(`/search?${params.toString()}`)
+      router.push(`/user/search?${params.toString()}`)
     }
   }
 
