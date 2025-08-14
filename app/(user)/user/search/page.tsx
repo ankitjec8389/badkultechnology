@@ -1,25 +1,48 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { Search, Filter, MapPin, ArrowUpDown, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Slider } from "@/components/ui/slider"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import Link from "next/link"
-import TripCard from "@/components/user/TripCard"
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Search, Filter, MapPin, ArrowUpDown, X, Cross } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import Link from "next/link";
+import TripCard from "@/components/user/TripCard";
 
-const durations = ["1-2 Days", "3-4 Days", "5-7 Days", "1-2 Weeks", "2+ Weeks"]
-const ageGroups = ["All Ages", "18-25", "26-35", "36-45", "46-55", "55+"]
-const moods = ["Adventure", "Relaxation", "Culture", "Foodie", "Sports"]
-const regions = ["North India", "South India", "East India", "West India", "Islands"]
-const difficulties = ["Easy", "Medium", "Difficult", "Moderate"]
-const cancellationTypes = ["Flexible", "Strict", "Moderate", "Non-Refundable"]
+const durations = ["1-2 Days", "3-4 Days", "5-7 Days", "1-2 Weeks", "2+ Weeks"];
+const ageGroups = ["All Ages", "18-25", "26-35", "36-45", "46-55", "55+"];
+const moods = ["Adventure", "Relaxation", "Culture", "Foodie", "Sports"];
+const regions = [
+  "North India",
+  "South India",
+  "East India",
+  "West India",
+  "Islands",
+];
+const difficulties = ["Easy", "Medium", "Difficult", "Moderate"];
+const cancellationTypes = ["Flexible", "Strict", "Moderate", "Non-Refundable"];
 const mockTrips = [
   {
     id: 1,
@@ -365,11 +388,15 @@ const mockTrips = [
     onRequest: false,
     doubleOccupancy: true,
     deals: ["Coffee Tasting Free"],
-    highlights: ["Coffee Plantation Tours", "Waterfall Visits", "Spice Gardens"],
+    highlights: [
+      "Coffee Plantation Tours",
+      "Waterfall Visits",
+      "Spice Gardens",
+    ],
     tags: ["Coffee", "Nature", "Hills"],
     groupSize: "8-12 people",
   },
-]
+];
 
 const FilterSection = ({
   budgetRange,
@@ -399,40 +426,50 @@ const FilterSection = ({
   dealsOnly,
   setDealsOnly,
 }: {
-  budgetRange: number[]
-  setBudgetRange: (value: number[]) => void
-  startDate: string
-  setStartDate: (value: string) => void
-  selectedDuration: string[]
-  setSelectedDuration: (value: string[]) => void
-  selectedAgeGroup: string[]
-  setSelectedAgeGroup: (value: string[]) => void
-  selectedMoods: string[]
-  setSelectedMoods: (value: string[]) => void
-  selectedRegions: string[]
-  setSelectedRegions: (value: string[]) => void
-  departureCity: string
-  setDepartureCity: (value: string) => void
-  selectedDifficulty: string[]
-  setSelectedDifficulty: (value: string[]) => void
-  selectedCancellation: string[]
-  setSelectedCancellation: (value: string[]) => void
-  emiOnly: boolean
-  setEmiOnly: (value: boolean) => void
-  onRequestOnly: boolean
-  setOnRequestOnly: (value: boolean) => void
-  doubleOccupancyOnly: boolean
-  setDoubleOccupancyOnly: (value: boolean) => void
-  dealsOnly: boolean
-  setDealsOnly: (value: boolean) => void
+  budgetRange: number[];
+  setBudgetRange: (value: number[]) => void;
+  startDate: string;
+  setStartDate: (value: string) => void;
+  selectedDuration: string[];
+  setSelectedDuration: (value: string[]) => void;
+  selectedAgeGroup: string[];
+  setSelectedAgeGroup: (value: string[]) => void;
+  selectedMoods: string[];
+  setSelectedMoods: (value: string[]) => void;
+  selectedRegions: string[];
+  setSelectedRegions: (value: string[]) => void;
+  departureCity: string;
+  setDepartureCity: (value: string) => void;
+  selectedDifficulty: string[];
+  setSelectedDifficulty: (value: string[]) => void;
+  selectedCancellation: string[];
+  setSelectedCancellation: (value: string[]) => void;
+  emiOnly: boolean;
+  setEmiOnly: (value: boolean) => void;
+  onRequestOnly: boolean;
+  setOnRequestOnly: (value: boolean) => void;
+  doubleOccupancyOnly: boolean;
+  setDoubleOccupancyOnly: (value: boolean) => void;
+  dealsOnly: boolean;
+  setDealsOnly: (value: boolean) => void;
 }) => (
   <div className="space-y-4 sm:space-y-6">
-    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Filters</h3>
+    <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+      Filters
+    </h3>
 
     {/* Budget Range */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Budget Range</label>
-      <Slider value={budgetRange} onValueChange={setBudgetRange} max={50000} step={1000} className="mb-2" />
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Budget Range
+      </label>
+      <Slider
+        value={budgetRange}
+        onValueChange={setBudgetRange}
+        max={50000}
+        step={1000}
+        className="mb-2"
+      />
       <div className="flex justify-between text-xs sm:text-sm text-gray-600">
         <span>₹{budgetRange[0].toLocaleString()}</span>
         <span>₹{budgetRange[1].toLocaleString()}</span>
@@ -441,13 +478,22 @@ const FilterSection = ({
 
     {/* Start Date */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Start Date</label>
-      <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="text-sm" />
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Start Date
+      </label>
+      <Input
+        type="date"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+        className="text-sm"
+      />
     </div>
 
     {/* Duration */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Duration</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Duration
+      </label>
       <div className="space-y-1.5 sm:space-y-2">
         {durations.map((duration) => (
           <div key={duration} className="flex items-center space-x-2">
@@ -456,13 +502,18 @@ const FilterSection = ({
               checked={selectedDuration.includes(duration)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setSelectedDuration([...selectedDuration, duration])
+                  setSelectedDuration([...selectedDuration, duration]);
                 } else {
-                  setSelectedDuration(selectedDuration.filter((d) => d !== duration))
+                  setSelectedDuration(
+                    selectedDuration.filter((d) => d !== duration)
+                  );
                 }
               }}
             />
-            <label htmlFor={duration} className="text-xs sm:text-sm text-gray-700">
+            <label
+              htmlFor={duration}
+              className="text-xs sm:text-sm text-gray-700"
+            >
               {duration}
             </label>
           </div>
@@ -472,7 +523,9 @@ const FilterSection = ({
 
     {/* Age Group */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Age Group</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Age Group
+      </label>
       <div className="space-y-1.5 sm:space-y-2">
         {ageGroups.map((age) => (
           <div key={age} className="flex items-center space-x-2">
@@ -481,9 +534,11 @@ const FilterSection = ({
               checked={selectedAgeGroup.includes(age)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setSelectedAgeGroup([...selectedAgeGroup, age])
+                  setSelectedAgeGroup([...selectedAgeGroup, age]);
                 } else {
-                  setSelectedAgeGroup(selectedAgeGroup.filter((a) => a !== age))
+                  setSelectedAgeGroup(
+                    selectedAgeGroup.filter((a) => a !== age)
+                  );
                 }
               }}
             />
@@ -497,7 +552,9 @@ const FilterSection = ({
 
     {/* Moods */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Moods</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Moods
+      </label>
       <div className="space-y-1.5 sm:space-y-2">
         {moods.map((mood) => (
           <div key={mood} className="flex items-center space-x-2">
@@ -506,9 +563,9 @@ const FilterSection = ({
               checked={selectedMoods.includes(mood)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setSelectedMoods([...selectedMoods, mood])
+                  setSelectedMoods([...selectedMoods, mood]);
                 } else {
-                  setSelectedMoods(selectedMoods.filter((m) => m !== mood))
+                  setSelectedMoods(selectedMoods.filter((m) => m !== mood));
                 }
               }}
             />
@@ -522,7 +579,9 @@ const FilterSection = ({
 
     {/* Regions */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Regions</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Regions
+      </label>
       <div className="space-y-1.5 sm:space-y-2">
         {regions.map((region) => (
           <div key={region} className="flex items-center space-x-2">
@@ -531,13 +590,18 @@ const FilterSection = ({
               checked={selectedRegions.includes(region)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setSelectedRegions([...selectedRegions, region])
+                  setSelectedRegions([...selectedRegions, region]);
                 } else {
-                  setSelectedRegions(selectedRegions.filter((r) => r !== region))
+                  setSelectedRegions(
+                    selectedRegions.filter((r) => r !== region)
+                  );
                 }
               }}
             />
-            <label htmlFor={region} className="text-xs sm:text-sm text-gray-700">
+            <label
+              htmlFor={region}
+              className="text-xs sm:text-sm text-gray-700"
+            >
               {region}
             </label>
           </div>
@@ -547,7 +611,9 @@ const FilterSection = ({
 
     {/* Departure City */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Departure City</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Departure City
+      </label>
       <Input
         type="text"
         placeholder="Enter your city"
@@ -559,7 +625,9 @@ const FilterSection = ({
 
     {/* Difficulty */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Difficulty</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Difficulty
+      </label>
       <div className="space-y-1.5 sm:space-y-2">
         {difficulties.map((difficulty) => (
           <div key={difficulty} className="flex items-center space-x-2">
@@ -568,13 +636,18 @@ const FilterSection = ({
               checked={selectedDifficulty.includes(difficulty)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setSelectedDifficulty([...selectedDifficulty, difficulty])
+                  setSelectedDifficulty([...selectedDifficulty, difficulty]);
                 } else {
-                  setSelectedDifficulty(selectedDifficulty.filter((d) => d !== difficulty))
+                  setSelectedDifficulty(
+                    selectedDifficulty.filter((d) => d !== difficulty)
+                  );
                 }
               }}
             />
-            <label htmlFor={difficulty} className="text-xs sm:text-sm text-gray-700">
+            <label
+              htmlFor={difficulty}
+              className="text-xs sm:text-sm text-gray-700"
+            >
               {difficulty}
             </label>
           </div>
@@ -584,7 +657,9 @@ const FilterSection = ({
 
     {/* Cancellation Policy */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Cancellation Policy</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Cancellation Policy
+      </label>
       <div className="space-y-1.5 sm:space-y-2">
         {cancellationTypes.map((cancellation) => (
           <div key={cancellation} className="flex items-center space-x-2">
@@ -593,13 +668,21 @@ const FilterSection = ({
               checked={selectedCancellation.includes(cancellation)}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setSelectedCancellation([...selectedCancellation, cancellation])
+                  setSelectedCancellation([
+                    ...selectedCancellation,
+                    cancellation,
+                  ]);
                 } else {
-                  setSelectedCancellation(selectedCancellation.filter((c) => c !== cancellation))
+                  setSelectedCancellation(
+                    selectedCancellation.filter((c) => c !== cancellation)
+                  );
                 }
               }}
             />
-            <label htmlFor={cancellation} className="text-xs sm:text-sm text-gray-700">
+            <label
+              htmlFor={cancellation}
+              className="text-xs sm:text-sm text-gray-700"
+            >
               {cancellation}
             </label>
           </div>
@@ -609,7 +692,9 @@ const FilterSection = ({
 
     {/* Additional Options */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">Additional Options</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+        Additional Options
+      </label>
       <div className="space-y-1.5 sm:space-y-2">
         <div className="flex items-center space-x-2">
           <Checkbox id="emi" checked={emiOnly} onCheckedChange={setEmiOnly} />
@@ -618,19 +703,37 @@ const FilterSection = ({
           </label>
         </div>
         <div className="flex items-center space-x-2">
-          <Checkbox id="onRequest" checked={onRequestOnly} onCheckedChange={setOnRequestOnly} />
-          <label htmlFor="onRequest" className="text-xs sm:text-sm text-gray-700">
+          <Checkbox
+            id="onRequest"
+            checked={onRequestOnly}
+            onCheckedChange={setOnRequestOnly}
+          />
+          <label
+            htmlFor="onRequest"
+            className="text-xs sm:text-sm text-gray-700"
+          >
             On Request/Exclusive Groups
           </label>
         </div>
         <div className="flex items-center space-x-2">
-          <Checkbox id="doubleOccupancy" checked={doubleOccupancyOnly} onCheckedChange={setDoubleOccupancyOnly} />
-          <label htmlFor="doubleOccupancy" className="text-xs sm:text-sm text-gray-700">
+          <Checkbox
+            id="doubleOccupancy"
+            checked={doubleOccupancyOnly}
+            onCheckedChange={setDoubleOccupancyOnly}
+          />
+          <label
+            htmlFor="doubleOccupancy"
+            className="text-xs sm:text-sm text-gray-700"
+          >
             Double Occupancy
           </label>
         </div>
         <div className="flex items-center space-x-2">
-          <Checkbox id="deals" checked={dealsOnly} onCheckedChange={setDealsOnly} />
+          <Checkbox
+            id="deals"
+            checked={dealsOnly}
+            onCheckedChange={setDealsOnly}
+          />
           <label htmlFor="deals" className="text-xs sm:text-sm text-gray-700">
             Discounts/Deals/Offers
           </label>
@@ -638,89 +741,98 @@ const FilterSection = ({
       </div>
     </div>
   </div>
-)
+);
 
 export default function SearchPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const [compareList, setCompareList] = useState<number[]>([])
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [showCompareDrawer, setShowCompareDrawer] = useState(false)
-  const [sortBy, setSortBy] = useState("relevance")
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [compareList, setCompareList] = useState<number[]>([]);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCompareDrawer, setShowCompareDrawer] = useState(false);
+  const [sortBy, setSortBy] = useState("relevance");
 
-  const [budgetRange, setBudgetRange] = useState([0, 50000])
-  const [selectedMoods, setSelectedMoods] = useState<string[]>([])
-  const [selectedRegions, setSelectedRegions] = useState<string[]>([])
-  const [selectedMonths, setSelectedMonths] = useState<string[]>([])
-  const [selectedDuration, setSelectedDuration] = useState<string[]>([])
-  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string[]>([])
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string[]>([])
-  const [selectedCancellation, setSelectedCancellation] = useState<string[]>([])
-  const [departureCity, setDepartureCity] = useState("")
-  const [emiOnly, setEmiOnly] = useState(false)
-  const [onRequestOnly, setOnRequestOnly] = useState(false)
-  const [doubleOccupancyOnly, setDoubleOccupancyOnly] = useState(false)
-  const [dealsOnly, setDealsOnly] = useState(false)
-  const [startDate, setStartDate] = useState("")
-  const [parsedQuery, setParsedQuery] = useState<string>("")
+  const [budgetRange, setBudgetRange] = useState([0, 50000]);
+  const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [selectedDuration, setSelectedDuration] = useState<string[]>([]);
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string[]>([]);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string[]>([]);
+  const [selectedCancellation, setSelectedCancellation] = useState<string[]>(
+    []
+  );
+  const [departureCity, setDepartureCity] = useState("");
+  const [emiOnly, setEmiOnly] = useState(false);
+  const [onRequestOnly, setOnRequestOnly] = useState(false);
+  const [doubleOccupancyOnly, setDoubleOccupancyOnly] = useState(false);
+  const [dealsOnly, setDealsOnly] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [parsedQuery, setParsedQuery] = useState<string>("");
 
-  const searchType = searchParams.get("type")
-  const originalQuery = searchParams.get("q")
-  const moodsParam = searchParams.get("moods") || ""
-  const destinationParam = searchParams.get("destination") || ""
-  const monthParam = searchParams.get("month") || ""
-  const maxBudgetParam = searchParams.get("maxBudget") || ""
-  const departureCityParam = searchParams.get("departureCity") || ""
-  const durationParam = searchParams.get("duration") || ""
+  const searchType = searchParams.get("type");
+  const originalQuery = searchParams.get("q");
+  const moodsParam = searchParams.get("moods") || "";
+  const destinationParam = searchParams.get("destination") || "";
+  const monthParam = searchParams.get("month") || "";
+  const maxBudgetParam = searchParams.get("maxBudget") || "";
+  const departureCityParam = searchParams.get("departureCity") || "";
+  const durationParam = searchParams.get("duration") || "";
 
   useEffect(() => {
     if (searchType === "universal" && originalQuery) {
-      setParsedQuery(originalQuery)
+      setParsedQuery(originalQuery);
     }
 
     if (moodsParam) {
-      setSelectedMoods(moodsParam.split(",").filter(Boolean))
+      setSelectedMoods(moodsParam.split(",").filter(Boolean));
     }
 
     if (destinationParam) {
       // Try to match destination to regions
-      const destination = destinationParam.toLowerCase()
+      const destination = destinationParam.toLowerCase();
       if (
         destination.includes("ladakh") ||
         destination.includes("manali") ||
         destination.includes("delhi") ||
         destination.includes("rajasthan")
       ) {
-        setSelectedRegions(["North India"])
-      } else if (destination.includes("kerala") || destination.includes("bangalore") || destination.includes("hampi")) {
-        setSelectedRegions(["South India"])
-      } else if (destination.includes("goa") || destination.includes("mumbai")) {
-        setSelectedRegions(["West India"])
+        setSelectedRegions(["North India"]);
+      } else if (
+        destination.includes("kerala") ||
+        destination.includes("bangalore") ||
+        destination.includes("hampi")
+      ) {
+        setSelectedRegions(["South India"]);
+      } else if (
+        destination.includes("goa") ||
+        destination.includes("mumbai")
+      ) {
+        setSelectedRegions(["West India"]);
       } else if (destination.includes("darjeeling")) {
-        setSelectedRegions(["East India"])
+        setSelectedRegions(["East India"]);
       }
     }
 
     if (monthParam) {
-      setSelectedMonths([monthParam])
+      setSelectedMonths([monthParam]);
     }
 
     if (maxBudgetParam) {
-      const budget = Number.parseInt(maxBudgetParam)
+      const budget = Number.parseInt(maxBudgetParam);
       if (budget > 0) {
-        setBudgetRange([0, budget])
+        setBudgetRange([0, budget]);
       }
     }
 
     if (departureCityParam) {
-      setDepartureCity(departureCityParam)
+      setDepartureCity(departureCityParam);
     }
 
     if (durationParam) {
       if (durationParam.includes("weekend")) {
-        setSelectedDuration(["1-2 Days", "3-4 Days"])
+        setSelectedDuration(["1-2 Days", "3-4 Days"]);
       } else {
-        setSelectedDuration([durationParam])
+        setSelectedDuration([durationParam]);
       }
     }
   }, [
@@ -732,97 +844,129 @@ export default function SearchPage() {
     maxBudgetParam,
     departureCityParam,
     durationParam,
-  ])
+  ]);
 
   const filteredAndSortedTrips = useMemo(() => {
     const filtered = mockTrips.filter((trip) => {
-      if (budgetRange[1] < 50000 && (trip.price < budgetRange[0] || trip.price > budgetRange[1])) return false
+      if (
+        budgetRange[1] < 50000 &&
+        (trip.price < budgetRange[0] || trip.price > budgetRange[1])
+      )
+        return false;
 
-      if (selectedMoods.length > 0 && !selectedMoods.some((mood) => trip.moodTags.includes(mood))) return false
+      if (
+        selectedMoods.length > 0 &&
+        !selectedMoods.some((mood) => trip.moodTags.includes(mood))
+      )
+        return false;
 
-      if (selectedRegions.length > 0 && !selectedRegions.includes(trip.region)) return false
+      if (selectedRegions.length > 0 && !selectedRegions.includes(trip.region))
+        return false;
 
       if (selectedDuration.length > 0) {
-        const tripDays = Number.parseInt(trip.duration.split(" ")[0])
+        const tripDays = Number.parseInt(trip.duration.split(" ")[0]);
         const matchesDuration = selectedDuration.some((duration) => {
-          if (duration === "1-2 Days") return tripDays <= 2
-          if (duration === "3-4 Days") return tripDays >= 3 && tripDays <= 4
-          if (duration === "5-7 Days") return tripDays >= 5 && tripDays <= 7
-          if (duration === "1-2 Weeks") return tripDays >= 8 && tripDays <= 14
-          if (duration === "2+ Weeks") return tripDays > 14
-          return false
-        })
-        if (!matchesDuration) return false
+          if (duration === "1-2 Days") return tripDays <= 2;
+          if (duration === "3-4 Days") return tripDays >= 3 && tripDays <= 4;
+          if (duration === "5-7 Days") return tripDays >= 5 && tripDays <= 7;
+          if (duration === "1-2 Weeks") return tripDays >= 8 && tripDays <= 14;
+          if (duration === "2+ Weeks") return tripDays > 14;
+          return false;
+        });
+        if (!matchesDuration) return false;
       }
 
       if (selectedAgeGroup.length > 0) {
         const matchesAge = selectedAgeGroup.some((selectedAge) => {
-          if (selectedAge === "All Ages") return trip.ageGroup === "All Ages"
+          if (selectedAge === "All Ages") return trip.ageGroup === "All Ages";
 
           const parseAgeRange = (ageStr: string) => {
-            if (ageStr === "All Ages") return { min: 0, max: 100 }
-            const match = ageStr.match(/(\d+)[-+]?(\d+)?/)
-            if (!match) return null
-            const min = Number.parseInt(match[1])
-            const max = match[2] ? Number.parseInt(match[2]) : ageStr.includes("+") ? 100 : min
-            return { min, max }
-          }
+            if (ageStr === "All Ages") return { min: 0, max: 100 };
+            const match = ageStr.match(/(\d+)[-+]?(\d+)?/);
+            if (!match) return null;
+            const min = Number.parseInt(match[1]);
+            const max = match[2]
+              ? Number.parseInt(match[2])
+              : ageStr.includes("+")
+              ? 100
+              : min;
+            return { min, max };
+          };
 
-          const selectedRange = parseAgeRange(selectedAge)
-          const tripRange = parseAgeRange(trip.ageGroup)
+          const selectedRange = parseAgeRange(selectedAge);
+          const tripRange = parseAgeRange(trip.ageGroup);
 
-          if (!selectedRange || !tripRange) return false
+          if (!selectedRange || !tripRange) return false;
 
-          return selectedRange.min <= tripRange.max && selectedRange.max >= tripRange.min
-        })
-        if (!matchesAge) return false
+          return (
+            selectedRange.min <= tripRange.max &&
+            selectedRange.max >= tripRange.min
+          );
+        });
+        if (!matchesAge) return false;
       }
 
-      if (selectedDifficulty.length > 0 && !selectedDifficulty.includes(trip.difficulty)) return false
+      if (
+        selectedDifficulty.length > 0 &&
+        !selectedDifficulty.includes(trip.difficulty)
+      )
+        return false;
 
-      if (selectedCancellation.length > 0 && !selectedCancellation.includes(trip.cancellation)) return false
+      if (
+        selectedCancellation.length > 0 &&
+        !selectedCancellation.includes(trip.cancellation)
+      )
+        return false;
 
       if (
         departureCity &&
         departureCity.trim() !== "" &&
         !trip.startPoint.toLowerCase().includes(departureCity.toLowerCase())
       )
-        return false
+        return false;
 
-      if (emiOnly && !trip.emi) return false
+      if (emiOnly && !trip.emi) return false;
 
-      if (onRequestOnly && !trip.onRequest) return false
+      if (onRequestOnly && !trip.onRequest) return false;
 
-      if (doubleOccupancyOnly && !trip.doubleOccupancy) return false
+      if (doubleOccupancyOnly && !trip.doubleOccupancy) return false;
 
-      if (dealsOnly && (!trip.deals || trip.deals.length === 0)) return false
+      if (dealsOnly && (!trip.deals || trip.deals.length === 0)) return false;
 
-      return true
-    })
+      return true;
+    });
 
-    const sorted = [...filtered]
+    const sorted = [...filtered];
     switch (sortBy) {
       case "price-low":
-        sorted.sort((a, b) => a.price - b.price)
-        break
+        sorted.sort((a, b) => a.price - b.price);
+        break;
       case "price-high":
-        sorted.sort((a, b) => b.price - a.price)
-        break
+        sorted.sort((a, b) => b.price - a.price);
+        break;
       case "rating":
-        sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        break
+        sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
       case "duration-low":
-        sorted.sort((a, b) => Number.parseInt(a.duration.split(" ")[0]) - Number.parseInt(b.duration.split(" ")[0]))
-        break
+        sorted.sort(
+          (a, b) =>
+            Number.parseInt(a.duration.split(" ")[0]) -
+            Number.parseInt(b.duration.split(" ")[0])
+        );
+        break;
       case "duration-high":
-        sorted.sort((a, b) => Number.parseInt(b.duration.split(" ")[0]) - Number.parseInt(a.duration.split(" ")[0]))
-        break
+        sorted.sort(
+          (a, b) =>
+            Number.parseInt(b.duration.split(" ")[0]) -
+            Number.parseInt(a.duration.split(" ")[0])
+        );
+        break;
       case "relevance":
       default:
-        break
+        break;
     }
 
-    return sorted
+    return sorted;
   }, [
     budgetRange,
     selectedMoods,
@@ -838,37 +982,42 @@ export default function SearchPage() {
     doubleOccupancyOnly,
     dealsOnly,
     sortBy,
-  ])
+  ]);
 
   const handleSaveTrip = useCallback((tripId: number) => {
-    setShowLoginModal(true)
-  }, [])
+    setShowLoginModal(true);
+  }, []);
 
   const handleCompareToggle = useCallback((tripId: number) => {
     setCompareList((prev) => {
       if (prev.includes(tripId)) {
-        return prev.filter((id) => id !== tripId)
+        return prev.filter((id) => id !== tripId);
       } else if (prev.length < 3) {
-        return [...prev, tripId]
+        return [...prev, tripId];
       }
-      return prev
-    })
-  }, [])
+      return prev;
+    });
+  }, []);
 
   const handleSort = useCallback((value: string) => {
-    setSortBy(value)
-  }, [])
+    setSortBy(value);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
-            <Link href="/landing" className="flex items-center space-x-2 sm:space-x-3">
+            <Link
+              href="/landing"
+              className="flex items-center space-x-2 sm:space-x-3"
+            >
               <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <span className="text-lg sm:text-xl font-bold text-gray-900">TravelPortal</span>
+              <span className="text-lg sm:text-xl font-bold text-gray-900">
+                TravelPortal
+              </span>
             </Link>
 
             <div className="flex-1 max-w-md sm:max-w-2xl mx-2 sm:mx-8">
@@ -883,7 +1032,10 @@ export default function SearchPage() {
             </div>
 
             <div className="flex items-center">
-              <Link href="/" className="text-sm sm:text-base text-gray-600 hover:text-gray-900">
+              <Link
+                href="/"
+                className="text-sm sm:text-base text-gray-600 hover:text-gray-900"
+              >
                 Login
               </Link>
             </div>
@@ -895,21 +1047,30 @@ export default function SearchPage() {
         <div className="bg-blue-50 border-b px-3 sm:px-4 lg:px-6 py-2">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-blue-700 font-medium">Searched for:</span>
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 flex items-center gap-1">
+              <span className="text-sm text-blue-700 font-medium">
+                Searched for:
+              </span>
+              <Badge
+                variant="outline"
+                className="bg-blue-100 text-blue-800 border-blue-200 flex items-center gap-1"
+              >
                 "{parsedQuery}"
                 <button
                   className="p-1 hover:bg-blue-200 rounded-full transition-colors"
                   onClick={(e) => {
-                    console.log("X button clicked") // Debug log
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setParsedQuery("")
-                    const currentParams = new URLSearchParams(window.location.search)
-                    currentParams.delete("q")
-                    currentParams.delete("type")
-                    const newUrl = currentParams.toString() ? `/search?${currentParams.toString()}` : "/search"
-                    router.replace(newUrl)
+                    console.log("X button clicked"); // Debug log
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setParsedQuery("");
+                    const currentParams = new URLSearchParams(
+                      window.location.search
+                    );
+                    currentParams.delete("q");
+                    currentParams.delete("type");
+                    const newUrl = currentParams.toString()
+                      ? `/user/search?${currentParams.toString()}`
+                      : "/user/search";
+                    router.replace(newUrl);
                   }}
                 >
                   <X className="w-4 h-4 text-blue-600 hover:text-blue-900" />
@@ -923,43 +1084,108 @@ export default function SearchPage() {
       <div className="bg-white border-b px-3 sm:px-4 lg:px-6 py-2 sm:py-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap gap-1 sm:gap-2">
+            {/* Selected Moods */}
             {selectedMoods.map((mood) => (
-              <Badge key={mood} variant="secondary" className="flex items-center gap-1 text-xs">
+              <Badge
+                key={mood}
+                variant="secondary"
+                className="flex items-center gap-1 text-xs"
+              >
                 {mood}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => setSelectedMoods(selectedMoods.filter((m) => m !== mood))}
-                />
+                <button
+                  className="p-1 hover:bg-gray-200 rounded-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMoods(selectedMoods.filter((m) => m !== mood));
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             ))}
+
+            {/* Selected Regions */}
             {selectedRegions.map((region) => (
-              <Badge key={region} variant="secondary" className="flex items-center gap-1 text-xs">
+              <Badge
+                key={region}
+                variant="secondary"
+                className="flex items-center gap-1 text-xs"
+              >
                 {region}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => setSelectedRegions(selectedRegions.filter((r) => r !== region))}
-                />
+                <button
+                  className="p-1 hover:bg-gray-200 rounded-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedRegions(
+                      selectedRegions.filter((r) => r !== region)
+                    );
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             ))}
+
+            {/* Selected Duration */}
             {selectedDuration.map((duration) => (
-              <Badge key={duration} variant="secondary" className="flex items-center gap-1 text-xs">
+              <Badge
+                key={duration}
+                variant="secondary"
+                className="flex items-center gap-1 text-xs"
+              >
                 {duration}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => setSelectedDuration(selectedDuration.filter((d) => d !== duration))}
-                />
+                <button
+                  className="p-1 hover:bg-gray-200 rounded-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedDuration(
+                      selectedDuration.filter((d) => d !== duration)
+                    );
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             ))}
+
+            {/* Departure City */}
             {departureCity && (
-              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+              <Badge
+                variant="secondary"
+                className="flex items-center gap-1 text-xs"
+              >
                 From: {departureCity}
-                <X className="w-3 h-3 cursor-pointer" onClick={() => setDepartureCity("")} />
+                <button
+                  className="p-1 hover:bg-gray-200 rounded-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDepartureCity("");
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             )}
+
+            {/* Budget Range */}
             {budgetRange[1] < 50000 && (
-              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+              <Badge
+                variant="secondary"
+                className="flex items-center gap-1 text-xs"
+              >
                 Under ₹{budgetRange[1].toLocaleString()}
-                <X className="w-3 h-3 cursor-pointer" onClick={() => setBudgetRange([0, 50000])} />
+                <button
+                  className="p-1 hover:bg-gray-200 rounded-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setBudgetRange([0, 50000]);
+                    const params = new URLSearchParams(window.location.search);
+                    params.delete("maxBudget");
+                    router.replace(`/user/search?${params.toString()}`);
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             )}
           </div>
@@ -1004,19 +1230,29 @@ export default function SearchPage() {
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Search Results</h1>
-                <p className="text-sm sm:text-base text-gray-600">{filteredAndSortedTrips.length} trips found</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  Search Results
+                </h1>
+                <p className="text-sm sm:text-base text-gray-600">
+                  {filteredAndSortedTrips.length} trips found
+                </p>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="outline" className="lg:hidden bg-transparent flex-1 sm:flex-none text-sm">
+                    <Button
+                      variant="outline"
+                      className="lg:hidden bg-transparent flex-1 sm:flex-none text-sm"
+                    >
                       <Filter className="w-4 h-4 mr-2" />
                       Filters
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-[300px] sm:w-80 overflow-y-auto p-4">
+                  <SheetContent
+                    side="left"
+                    className="w-[300px] sm:w-80 overflow-y-auto p-4"
+                  >
                     <SheetHeader>
                       <SheetTitle>Filters</SheetTitle>
                     </SheetHeader>
@@ -1060,11 +1296,19 @@ export default function SearchPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="relevance">Relevance</SelectItem>
-                    <SelectItem value="price-low">Price: Low to High</SelectItem>
-                    <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    <SelectItem value="price-low">
+                      Price: Low to High
+                    </SelectItem>
+                    <SelectItem value="price-high">
+                      Price: High to Low
+                    </SelectItem>
                     <SelectItem value="rating">Highest Rated</SelectItem>
-                    <SelectItem value="duration-low">Duration: Short to Long</SelectItem>
-                    <SelectItem value="duration-high">Duration: Long to Short</SelectItem>
+                    <SelectItem value="duration-low">
+                      Duration: Short to Long
+                    </SelectItem>
+                    <SelectItem value="duration-high">
+                      Duration: Long to Short
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1085,14 +1329,22 @@ export default function SearchPage() {
             {filteredAndSortedTrips.length === 0 && (
               <div className="text-center py-8 sm:py-12">
                 <div className="max-w-md mx-auto px-4">
-                  <p className="text-gray-500 text-base sm:text-lg mb-2">No trips found matching your criteria.</p>
-                  <p className="text-gray-400 text-sm">Try adjusting your filters or search terms.</p>
+                  <p className="text-gray-500 text-base sm:text-lg mb-2">
+                    No trips found matching your criteria.
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    Try adjusting your filters or search terms.
+                  </p>
                   <div className="mt-4 text-xs text-gray-400 space-y-1">
                     <p>
                       Active filters: Budget ₹{budgetRange[0]}-₹{budgetRange[1]}
                     </p>
-                    {selectedMoods.length > 0 && <p>Moods: {selectedMoods.join(", ")}</p>}
-                    {selectedRegions.length > 0 && <p>Regions: {selectedRegions.join(", ")}</p>}
+                    {selectedMoods.length > 0 && (
+                      <p>Moods: {selectedMoods.join(", ")}</p>
+                    )}
+                    {selectedRegions.length > 0 && (
+                      <p>Regions: {selectedRegions.join(", ")}</p>
+                    )}
                     {departureCity && <p>From: {departureCity}</p>}
                   </div>
                 </div>
@@ -1123,7 +1375,11 @@ export default function SearchPage() {
               Please login to save trips or use compare functionality.
             </p>
             <div className="flex gap-3 justify-center">
-              <Button variant="outline" onClick={() => setShowLoginModal(false)} className="text-sm">
+              <Button
+                variant="outline"
+                onClick={() => setShowLoginModal(false)}
+                className="text-sm"
+              >
                 Cancel
               </Button>
               <Link href="/">
@@ -1136,5 +1392,5 @@ export default function SearchPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

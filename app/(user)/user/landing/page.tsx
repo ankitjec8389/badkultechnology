@@ -73,178 +73,116 @@ export default function LandingPage() {
     }
   }
 
-  const parseUniversalQuery = (query: string) => {
-    const lowerQuery = query.toLowerCase()
-    const params: any = {}
+const parseUniversalQuery = (query: string) => {
+  const lowerQuery = query.toLowerCase().replace(/\s+/g, " ").trim();
+  const params: any = {};
+  const detectedTokens: string[] = [];
 
-    // Extract activity/mood keywords
-    const activityMap: Record<string, string[]> = {
-      trekking: ["trek", "trekking", "hiking", "mountain climbing"],
-      beach: ["beach", "coastal", "seaside", "ocean"],
-      adventure: ["adventure", "thrill", "extreme", "adrenaline"],
-      heritage: ["heritage", "historical", "culture", "monument", "palace", "fort"],
-      spiritual: ["spiritual", "temple", "pilgrimage", "meditation", "yoga"],
-      camping: ["camping", "camp", "outdoor", "wilderness"],
-      weekender: ["weekend", "short trip", "2 days", "3 days"],
-      party: ["party", "nightlife", "club", "music", "festival"],
-      motorsports: ["bike", "biking", "motorcycle", "road trip", "drive"],
-      mountains: ["mountain", "hill", "peak", "valley", "himalaya"],
-      forest: ["forest", "jungle", "wildlife", "safari", "nature"],
-    }
+  // --- Activity / Mood Keywords ---
+  const activityMap: Record<string, string[]> = {
+    trekking: ["trek", "trekking", "hiking", "mountain climbing", "trekker"],
+    beach: ["beach", "coastal", "seaside", "ocean", "shore"],
+    adventure: ["adventure", "thrill", "extreme", "adrenaline"],
+    heritage: ["heritage", "historical", "culture", "monument", "palace", "fort", "ancient"],
+    spiritual: ["spiritual", "temple", "pilgrimage", "meditation", "yoga", "ashram"],
+    camping: ["camping", "camp", "outdoor", "wilderness"],
+    weekender: ["weekend", "short trip", "2 days", "3 days", "overnight"],
+    party: ["party", "nightlife", "club", "music", "festival"],
+    motorsports: ["bike", "biking", "motorcycle", "road trip", "drive", "driving"],
+    mountains: ["mountain", "hill", "peak", "valley", "himalaya", "ghat"],
+    forest: ["forest", "jungle", "wildlife", "safari", "nature"],
+    luxury: ["luxury", "5-star", "premium", "resort stay"],
+    budget: ["budget", "cheap", "affordable", "low cost"],
+    honeymoon: ["honeymoon", "romantic getaway", "just married"],
+    photography: ["photography", "photo tour", "camera trip"],
+    wellness: ["wellness", "spa", "detox", "retreat"]
+  };
 
-    // Find matching activities
-    const detectedMoods: string[] = []
-    Object.entries(activityMap).forEach(([mood, keywords]) => {
-      if (keywords.some((keyword) => lowerQuery.includes(keyword))) {
-        detectedMoods.push(mood)
-      }
-    })
+  const detectedMoods = Object.entries(activityMap)
+    .filter(([mood, keywords]) => keywords.some((k) => lowerQuery.includes(k)))
+    .map(([mood]) => mood);
 
-    if (detectedMoods.length > 0) {
-      params.moods = detectedMoods.slice(0, 3).join(",")
-    }
-
-    // Extract locations/destinations
-    const locationKeywords = [
-      "ladakh",
-      "manali",
-      "goa",
-      "kerala",
-      "rajasthan",
-      "himachal",
-      "kashmir",
-      "uttarakhand",
-      "sikkim",
-      "meghalaya",
-      "andaman",
-      "lakshadweep",
-      "mumbai",
-      "delhi",
-      "bangalore",
-      "chennai",
-      "kolkata",
-      "pune",
-      "hyderabad",
-      "jaipur",
-      "udaipur",
-      "jodhpur",
-      "rishikesh",
-      "haridwar",
-      "dharamshala",
-      "shimla",
-      "darjeeling",
-      "gangtok",
-      "shillong",
-      "coorg",
-      "ooty",
-      "munnar",
-      "alleppey",
-      "hampi",
-      "mysore",
-      "agra",
-      "varanasi",
-      "pushkar",
-      "mount abu",
-      "nainital",
-      "mussoorie",
-      "dehradun",
-      "spiti",
-      "kinnaur",
-      "zanskar",
-      "leh",
-    ]
-
-    const detectedLocations = locationKeywords.filter((location) => lowerQuery.includes(location))
-
-    if (detectedLocations.length > 0) {
-      params.destination = detectedLocations[0]
-    }
-
-    // Extract departure city (from X pattern)
-    const fromMatch = lowerQuery.match(/from\s+([a-zA-Z\s]+?)(?:\s|$|,|in|under|for)/)
-    if (fromMatch) {
-      params.departureCity = fromMatch[1].trim()
-    }
-
-    // Extract months
-    const monthKeywords = [
-      "january",
-      "february",
-      "march",
-      "april",
-      "may",
-      "june",
-      "july",
-      "august",
-      "september",
-      "october",
-      "november",
-      "december",
-      "jan",
-      "feb",
-      "mar",
-      "apr",
-      "may",
-      "jun",
-      "jul",
-      "aug",
-      "sep",
-      "oct",
-      "nov",
-      "dec",
-    ]
-
-    const detectedMonth = monthKeywords.find((month) => lowerQuery.includes(month))
-    if (detectedMonth) {
-      const fullMonthNames = {
-        jan: "January",
-        feb: "February",
-        mar: "March",
-        apr: "April",
-        may: "May",
-        jun: "June",
-        jul: "July",
-        aug: "August",
-        sep: "September",
-        oct: "October",
-        nov: "November",
-        dec: "December",
-      }
-      params.month =
-        fullMonthNames[detectedMonth as keyof typeof fullMonthNames] ||
-        detectedMonth.charAt(0).toUpperCase() + detectedMonth.slice(1)
-    }
-
-    // Extract budget (under X, below X, less than X)
-    const budgetMatch = lowerQuery.match(/(?:under|below|less than|within|upto|up to)\s*₹?\s*(\d+)k?/)
-    if (budgetMatch) {
-      let budget = Number.parseInt(budgetMatch[1])
-      if (lowerQuery.includes("k") || budget < 100) {
-        budget = budget * 1000
-      }
-      params.maxBudget = budget
-    }
-
-    // Extract duration hints
-    if (lowerQuery.includes("weekend") || lowerQuery.includes("2 day") || lowerQuery.includes("3 day")) {
-      params.duration = "2-3 days"
-    } else if (lowerQuery.includes("week") || lowerQuery.includes("7 day")) {
-      params.duration = "5-7 days"
-    } else if (lowerQuery.includes("long") || lowerQuery.includes("extended")) {
-      params.duration = "7+ days"
-    }
-
-    // Extract group preferences
-    if (lowerQuery.includes("solo") || lowerQuery.includes("alone")) {
-      params.groupType = "solo-friendly"
-    } else if (lowerQuery.includes("couple") || lowerQuery.includes("romantic")) {
-      params.groupType = "couples"
-    } else if (lowerQuery.includes("family") || lowerQuery.includes("kids")) {
-      params.groupType = "family-friendly"
-    }
-
-    return params
+  if (detectedMoods.length) {
+    params.moods = [...new Set(detectedMoods)].slice(0, 5).join(",");
+    detectedTokens.push(...detectedMoods);
   }
+
+  // --- Locations ---
+  const locationKeywords = [
+    "ladakh","manali","goa","kerala","rajasthan","himachal","kashmir","uttarakhand","sikkim","meghalaya",
+    "andaman","lakshadweep","mumbai","delhi","bangalore","chennai","kolkata","pune","hyderabad","jaipur",
+    "udaipur","jodhpur","rishikesh","haridwar","dharamshala","shimla","darjeeling","gangtok","shillong",
+    "coorg","ooty","munnar","alleppey","hampi","mysore","agra","varanasi","pushkar","mount abu","nainital",
+    "mussoorie","dehradun","spiti","kinnaur","zanskar","leh"
+  ];
+
+  const detectedLocations = locationKeywords.filter((loc) => lowerQuery.includes(loc));
+  if (detectedLocations.length) {
+    params.destination = detectedLocations.join(",");
+    detectedTokens.push(...detectedLocations);
+  }
+
+  // --- Departure City ---
+  const fromMatch = lowerQuery.match(/from\s+([a-zA-Z\s]+)/);
+  if (fromMatch) {
+    params.departureCity = fromMatch[1].trim();
+    detectedTokens.push(params.departureCity);
+  }
+
+  // --- Month & Year ---
+  const monthMap: Record<string, string> = {
+    jan: "January", feb: "February", mar: "March", apr: "April", may: "May", jun: "June",
+    jul: "July", aug: "August", sep: "September", sept: "September",
+    oct: "October", nov: "November", dec: "December"
+  };
+  const monthRegex = new RegExp(`\\b(${Object.keys(monthMap).join("|")}|${Object.values(monthMap).join("|")})\\b`, "i");
+  const monthMatch = lowerQuery.match(monthRegex);
+  if (monthMatch) {
+    const m = monthMatch[1].toLowerCase();
+    params.month = monthMap[m as keyof typeof monthMap] || m.charAt(0).toUpperCase() + m.slice(1);
+    detectedTokens.push(params.month);
+  }
+
+  // --- Budget (supports "10k", "10,000", "Rs 10k", "between 5k and 15k") ---
+  const budgetRangeMatch = lowerQuery.match(/(?:between|from)\s*₹?\s*(\d+)[kK]?\s*(?:and|to)\s*₹?\s*(\d+)[kK]?/);
+  if (budgetRangeMatch) {
+    let min = parseInt(budgetRangeMatch[1]);
+    let max = parseInt(budgetRangeMatch[2]);
+    if (max < 500) { min *= 1000; max *= 1000; }
+    params.minBudget = min;
+    params.maxBudget = max;
+    detectedTokens.push(`₹${min} - ₹${max}`);
+  } else {
+    const budgetMatch = lowerQuery.match(/(?:under|below|less than|within|upto|up to)\s*₹?\s*(\d+)[kK]?/);
+    if (budgetMatch) {
+      let budget = parseInt(budgetMatch[1]);
+      if (budget < 500) budget *= 1000;
+      params.maxBudget = budget;
+      detectedTokens.push(`Under ₹${budget}`);
+    }
+  }
+
+  // --- Duration ---
+  if (/weekend|2 day|3 day|overnight/.test(lowerQuery)) {
+    params.duration = "2-3 days";
+  } else if (/week|7 day/.test(lowerQuery)) {
+    params.duration = "5-7 days";
+  } else if (/long|extended|10 day/.test(lowerQuery)) {
+    params.duration = "7+ days";
+  }
+
+  // --- Group Type ---
+  if (/solo|alone/.test(lowerQuery)) {
+    params.groupType = "solo-friendly";
+  } else if (/couple|romantic|honeymoon/.test(lowerQuery)) {
+    params.groupType = "couples";
+  } else if (/family|kids/.test(lowerQuery)) {
+    params.groupType = "family-friendly";
+  }
+
+  return { ...params, tokens: detectedTokens };
+};
+
 
   const handleUniversalSearch = () => {
     if (universalQuery.trim()) {
