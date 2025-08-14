@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Search, Filter, MapPin, ArrowUpDown, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -642,6 +642,7 @@ const FilterSection = ({
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [compareList, setCompareList] = useState<number[]>([])
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showCompareDrawer, setShowCompareDrawer] = useState(false)
@@ -660,33 +661,87 @@ export default function SearchPage() {
   const [onRequestOnly, setOnRequestOnly] = useState(false)
   const [doubleOccupancyOnly, setDoubleOccupancyOnly] = useState(false)
   const [dealsOnly, setDealsOnly] = useState(false)
-  const [startDate, setStartDate] = useState("") // Declare startDate and setStartDate
+  const [startDate, setStartDate] = useState("")
+  const [parsedQuery, setParsedQuery] = useState<string>("")
+
+  const searchType = searchParams.get("type")
+  const originalQuery = searchParams.get("q")
+  const moodsParam = searchParams.get("moods") || ""
+  const destinationParam = searchParams.get("destination") || ""
+  const monthParam = searchParams.get("month") || ""
+  const maxBudgetParam = searchParams.get("maxBudget") || ""
+  const departureCityParam = searchParams.get("departureCity") || ""
+  const durationParam = searchParams.get("duration") || ""
 
   useEffect(() => {
-    // Convert searchParams to a stable string
-    const moodsParam = searchParams.get("moods") || ""
-    const moodsArray = moodsParam ? moodsParam.split(",") : []
-
-    // Only update if there's an actual difference
-    const isDifferent = moodsArray.length !== selectedMoods.length || moodsArray.some((m) => !selectedMoods.includes(m))
-
-    if (isDifferent) {
-      setSelectedMoods(moodsArray)
+    if (searchType === "universal" && originalQuery) {
+      setParsedQuery(originalQuery)
     }
-  }, [searchParams.toString(), selectedMoods])
+
+    if (moodsParam) {
+      setSelectedMoods(moodsParam.split(",").filter(Boolean))
+    }
+
+    if (destinationParam) {
+      // Try to match destination to regions
+      const destination = destinationParam.toLowerCase()
+      if (
+        destination.includes("ladakh") ||
+        destination.includes("manali") ||
+        destination.includes("delhi") ||
+        destination.includes("rajasthan")
+      ) {
+        setSelectedRegions(["North India"])
+      } else if (destination.includes("kerala") || destination.includes("bangalore") || destination.includes("hampi")) {
+        setSelectedRegions(["South India"])
+      } else if (destination.includes("goa") || destination.includes("mumbai")) {
+        setSelectedRegions(["West India"])
+      } else if (destination.includes("darjeeling")) {
+        setSelectedRegions(["East India"])
+      }
+    }
+
+    if (monthParam) {
+      setSelectedMonths([monthParam])
+    }
+
+    if (maxBudgetParam) {
+      const budget = Number.parseInt(maxBudgetParam)
+      if (budget > 0) {
+        setBudgetRange([0, budget])
+      }
+    }
+
+    if (departureCityParam) {
+      setDepartureCity(departureCityParam)
+    }
+
+    if (durationParam) {
+      if (durationParam.includes("weekend")) {
+        setSelectedDuration(["1-2 Days", "3-4 Days"])
+      } else {
+        setSelectedDuration([durationParam])
+      }
+    }
+  }, [
+    searchType,
+    originalQuery,
+    moodsParam,
+    destinationParam,
+    monthParam,
+    maxBudgetParam,
+    departureCityParam,
+    durationParam,
+  ])
 
   const filteredAndSortedTrips = useMemo(() => {
     const filtered = mockTrips.filter((trip) => {
-      // Budget filter
-      if (trip.price < budgetRange[0] || trip.price > budgetRange[1]) return false
+      if (budgetRange[1] < 50000 && (trip.price < budgetRange[0] || trip.price > budgetRange[1])) return false
 
-      // Mood filter
       if (selectedMoods.length > 0 && !selectedMoods.some((mood) => trip.moodTags.includes(mood))) return false
 
-      // Region filter
       if (selectedRegions.length > 0 && !selectedRegions.includes(trip.region)) return false
 
-      // Duration filter
       if (selectedDuration.length > 0) {
         const tripDays = Number.parseInt(trip.duration.split(" ")[0])
         const matchesDuration = selectedDuration.some((duration) => {
@@ -700,7 +755,6 @@ export default function SearchPage() {
         if (!matchesDuration) return false
       }
 
-      // Age group filter
       if (selectedAgeGroup.length > 0) {
         const matchesAge = selectedAgeGroup.some((selectedAge) => {
           if (selectedAge === "All Ages") return trip.ageGroup === "All Ages"
@@ -724,31 +778,28 @@ export default function SearchPage() {
         if (!matchesAge) return false
       }
 
-      // Difficulty filter
       if (selectedDifficulty.length > 0 && !selectedDifficulty.includes(trip.difficulty)) return false
 
-      // Cancellation filter
       if (selectedCancellation.length > 0 && !selectedCancellation.includes(trip.cancellation)) return false
 
-      // Departure city filter
-      if (departureCity && !trip.startPoint.toLowerCase().includes(departureCity.toLowerCase())) return false
+      if (
+        departureCity &&
+        departureCity.trim() !== "" &&
+        !trip.startPoint.toLowerCase().includes(departureCity.toLowerCase())
+      )
+        return false
 
-      // EMI filter
       if (emiOnly && !trip.emi) return false
 
-      // On request filter
       if (onRequestOnly && !trip.onRequest) return false
 
-      // Double occupancy filter
       if (doubleOccupancyOnly && !trip.doubleOccupancy) return false
 
-      // Deals filter
       if (dealsOnly && (!trip.deals || trip.deals.length === 0)) return false
 
       return true
     })
 
-    // Apply sorting
     const sorted = [...filtered]
     switch (sortBy) {
       case "price-low":
@@ -768,7 +819,6 @@ export default function SearchPage() {
         break
       case "relevance":
       default:
-        // Keep original order for relevance
         break
     }
 
@@ -777,6 +827,7 @@ export default function SearchPage() {
     budgetRange,
     selectedMoods,
     selectedRegions,
+    selectedMonths,
     selectedDuration,
     selectedAgeGroup,
     selectedDifficulty,
@@ -810,11 +861,10 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
-            <Link href="/user/landing" className="flex items-center space-x-2 sm:space-x-3">
+            <Link href="/landing" className="flex items-center space-x-2 sm:space-x-3">
               <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
@@ -841,7 +891,36 @@ export default function SearchPage() {
         </div>
       </header>
 
-      <div className="bg-white border-b px-3 sm:px-4 lg:px-8 py-2 sm:py-4">
+      {parsedQuery && (
+        <div className="bg-blue-50 border-b px-3 sm:px-4 lg:px-6 py-2">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-blue-700 font-medium">Searched for:</span>
+              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 flex items-center gap-1">
+                "{parsedQuery}"
+                <button
+                  className="p-1 hover:bg-blue-200 rounded-full transition-colors"
+                  onClick={(e) => {
+                    console.log("X button clicked") // Debug log
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setParsedQuery("")
+                    const currentParams = new URLSearchParams(window.location.search)
+                    currentParams.delete("q")
+                    currentParams.delete("type")
+                    const newUrl = currentParams.toString() ? `/search?${currentParams.toString()}` : "/search"
+                    router.replace(newUrl)
+                  }}
+                >
+                  <X className="w-4 h-4 text-blue-600 hover:text-blue-900" />
+                </button>
+              </Badge>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white border-b px-3 sm:px-4 lg:px-6 py-2 sm:py-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap gap-1 sm:gap-2">
             {selectedMoods.map((mood) => (
@@ -871,13 +950,24 @@ export default function SearchPage() {
                 />
               </Badge>
             ))}
+            {departureCity && (
+              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                From: {departureCity}
+                <X className="w-3 h-3 cursor-pointer" onClick={() => setDepartureCity("")} />
+              </Badge>
+            )}
+            {budgetRange[1] < 50000 && (
+              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                Under ₹{budgetRange[1].toLocaleString()}
+                <X className="w-3 h-3 cursor-pointer" onClick={() => setBudgetRange([0, 50000])} />
+              </Badge>
+            )}
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-6">
         <div className="flex gap-4 lg:gap-8">
-          {/* Filters Sidebar - Hidden on mobile */}
           <div className="hidden lg:block w-72 xl:w-80 flex-shrink-0">
             <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6 sticky top-24 max-h-[calc(100vh-120px)] overflow-y-auto">
               <FilterSection
@@ -911,7 +1001,6 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
               <div>
@@ -920,7 +1009,6 @@ export default function SearchPage() {
               </div>
 
               <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                {/* Mobile Filter Button */}
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="outline" className="lg:hidden bg-transparent flex-1 sm:flex-none text-sm">
@@ -965,7 +1053,6 @@ export default function SearchPage() {
                   </SheetContent>
                 </Sheet>
 
-                {/* Sort Dropdown */}
                 <Select value={sortBy} onValueChange={handleSort}>
                   <SelectTrigger className="w-full sm:w-48 text-sm">
                     <ArrowUpDown className="w-4 h-4 mr-2" />
@@ -995,12 +1082,19 @@ export default function SearchPage() {
               ))}
             </div>
 
-            {/* No Trips Found Message */}
             {filteredAndSortedTrips.length === 0 && (
               <div className="text-center py-8 sm:py-12">
                 <div className="max-w-md mx-auto px-4">
                   <p className="text-gray-500 text-base sm:text-lg mb-2">No trips found matching your criteria.</p>
                   <p className="text-gray-400 text-sm">Try adjusting your filters or search terms.</p>
+                  <div className="mt-4 text-xs text-gray-400 space-y-1">
+                    <p>
+                      Active filters: Budget ₹{budgetRange[0]}-₹{budgetRange[1]}
+                    </p>
+                    {selectedMoods.length > 0 && <p>Moods: {selectedMoods.join(", ")}</p>}
+                    {selectedRegions.length > 0 && <p>Regions: {selectedRegions.join(", ")}</p>}
+                    {departureCity && <p>From: {departureCity}</p>}
+                  </div>
                 </div>
               </div>
             )}
@@ -1019,7 +1113,6 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Login Modal */}
       <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
         <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>

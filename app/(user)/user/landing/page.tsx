@@ -73,11 +73,186 @@ export default function LandingPage() {
     }
   }
 
+  const parseUniversalQuery = (query: string) => {
+    const lowerQuery = query.toLowerCase()
+    const params: any = {}
+
+    // Extract activity/mood keywords
+    const activityMap: Record<string, string[]> = {
+      trekking: ["trek", "trekking", "hiking", "mountain climbing"],
+      beach: ["beach", "coastal", "seaside", "ocean"],
+      adventure: ["adventure", "thrill", "extreme", "adrenaline"],
+      heritage: ["heritage", "historical", "culture", "monument", "palace", "fort"],
+      spiritual: ["spiritual", "temple", "pilgrimage", "meditation", "yoga"],
+      camping: ["camping", "camp", "outdoor", "wilderness"],
+      weekender: ["weekend", "short trip", "2 days", "3 days"],
+      party: ["party", "nightlife", "club", "music", "festival"],
+      motorsports: ["bike", "biking", "motorcycle", "road trip", "drive"],
+      mountains: ["mountain", "hill", "peak", "valley", "himalaya"],
+      forest: ["forest", "jungle", "wildlife", "safari", "nature"],
+    }
+
+    // Find matching activities
+    const detectedMoods: string[] = []
+    Object.entries(activityMap).forEach(([mood, keywords]) => {
+      if (keywords.some((keyword) => lowerQuery.includes(keyword))) {
+        detectedMoods.push(mood)
+      }
+    })
+
+    if (detectedMoods.length > 0) {
+      params.moods = detectedMoods.slice(0, 3).join(",")
+    }
+
+    // Extract locations/destinations
+    const locationKeywords = [
+      "ladakh",
+      "manali",
+      "goa",
+      "kerala",
+      "rajasthan",
+      "himachal",
+      "kashmir",
+      "uttarakhand",
+      "sikkim",
+      "meghalaya",
+      "andaman",
+      "lakshadweep",
+      "mumbai",
+      "delhi",
+      "bangalore",
+      "chennai",
+      "kolkata",
+      "pune",
+      "hyderabad",
+      "jaipur",
+      "udaipur",
+      "jodhpur",
+      "rishikesh",
+      "haridwar",
+      "dharamshala",
+      "shimla",
+      "darjeeling",
+      "gangtok",
+      "shillong",
+      "coorg",
+      "ooty",
+      "munnar",
+      "alleppey",
+      "hampi",
+      "mysore",
+      "agra",
+      "varanasi",
+      "pushkar",
+      "mount abu",
+      "nainital",
+      "mussoorie",
+      "dehradun",
+      "spiti",
+      "kinnaur",
+      "zanskar",
+      "leh",
+    ]
+
+    const detectedLocations = locationKeywords.filter((location) => lowerQuery.includes(location))
+
+    if (detectedLocations.length > 0) {
+      params.destination = detectedLocations[0]
+    }
+
+    // Extract departure city (from X pattern)
+    const fromMatch = lowerQuery.match(/from\s+([a-zA-Z\s]+?)(?:\s|$|,|in|under|for)/)
+    if (fromMatch) {
+      params.departureCity = fromMatch[1].trim()
+    }
+
+    // Extract months
+    const monthKeywords = [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+      "jan",
+      "feb",
+      "mar",
+      "apr",
+      "may",
+      "jun",
+      "jul",
+      "aug",
+      "sep",
+      "oct",
+      "nov",
+      "dec",
+    ]
+
+    const detectedMonth = monthKeywords.find((month) => lowerQuery.includes(month))
+    if (detectedMonth) {
+      const fullMonthNames = {
+        jan: "January",
+        feb: "February",
+        mar: "March",
+        apr: "April",
+        may: "May",
+        jun: "June",
+        jul: "July",
+        aug: "August",
+        sep: "September",
+        oct: "October",
+        nov: "November",
+        dec: "December",
+      }
+      params.month =
+        fullMonthNames[detectedMonth as keyof typeof fullMonthNames] ||
+        detectedMonth.charAt(0).toUpperCase() + detectedMonth.slice(1)
+    }
+
+    // Extract budget (under X, below X, less than X)
+    const budgetMatch = lowerQuery.match(/(?:under|below|less than|within|upto|up to)\s*₹?\s*(\d+)k?/)
+    if (budgetMatch) {
+      let budget = Number.parseInt(budgetMatch[1])
+      if (lowerQuery.includes("k") || budget < 100) {
+        budget = budget * 1000
+      }
+      params.maxBudget = budget
+    }
+
+    // Extract duration hints
+    if (lowerQuery.includes("weekend") || lowerQuery.includes("2 day") || lowerQuery.includes("3 day")) {
+      params.duration = "2-3 days"
+    } else if (lowerQuery.includes("week") || lowerQuery.includes("7 day")) {
+      params.duration = "5-7 days"
+    } else if (lowerQuery.includes("long") || lowerQuery.includes("extended")) {
+      params.duration = "7+ days"
+    }
+
+    // Extract group preferences
+    if (lowerQuery.includes("solo") || lowerQuery.includes("alone")) {
+      params.groupType = "solo-friendly"
+    } else if (lowerQuery.includes("couple") || lowerQuery.includes("romantic")) {
+      params.groupType = "couples"
+    } else if (lowerQuery.includes("family") || lowerQuery.includes("kids")) {
+      params.groupType = "family-friendly"
+    }
+
+    return params
+  }
+
   const handleUniversalSearch = () => {
     if (universalQuery.trim()) {
+      const parsedParams = parseUniversalQuery(universalQuery)
       const params = new URLSearchParams({
         q: universalQuery,
         type: "universal",
+        ...parsedParams,
       })
       router.push(`/user/search?${params.toString()}`)
     }
@@ -281,13 +456,46 @@ export default function LandingPage() {
                       <Badge
                         variant="outline"
                         className="cursor-pointer hover:bg-blue-100 bg-blue-50 border-blue-200"
-                        onClick={() => setUniversalQuery(`trips from ${currentLocation}`)}
+                        onMouseDown={(e) => {
+                          e.preventDefault()
+                          setUniversalQuery(`weekend trips from ${currentLocation}`)
+                          setShowSuggestions(false)
+                        }}
                       >
                         <MapPin className="w-3 h-3 mr-1" />
-                        Trips from {currentLocation}
+                        Weekend trips from {currentLocation}
                       </Badge>
                     </div>
                   )}
+
+                  <div className="mb-4">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Smart Search Examples</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        "trekking in Ladakh in September under 25k",
+                        "weekend trips from Bangalore",
+                        "beach holidays in Goa for couples",
+                        "heritage tours in Rajasthan under 15k",
+                        "adventure sports in Rishikesh",
+                        "solo trips to Kerala backwaters",
+                        "bike trips to Spiti Valley in June",
+                        "yoga retreats in Dharamshala",
+                      ].map((example, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="cursor-pointer hover:bg-blue-100 text-xs"
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            setUniversalQuery(example)
+                            setShowSuggestions(false)
+                          }}
+                        >
+                          {example}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
 
                   <div className="mb-4">
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Popular Searches</h4>
@@ -297,13 +505,18 @@ export default function LandingPage() {
                           key={index}
                           variant="secondary"
                           className="cursor-pointer hover:bg-blue-100"
-                          onClick={() => setUniversalQuery(search)}
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            setUniversalQuery(search)
+                            setShowSuggestions(false)
+                          }}
                         >
                           {search}
                         </Badge>
                       ))}
                     </div>
                   </div>
+
                   <div>
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Trending Destinations</h4>
                     <div className="flex flex-wrap gap-2">
@@ -312,7 +525,11 @@ export default function LandingPage() {
                           key={index}
                           variant="outline"
                           className="cursor-pointer hover:bg-gray-100"
-                          onClick={() => setUniversalQuery(destination)}
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            setUniversalQuery(destination)
+                            setShowSuggestions(false)
+                          }}
                         >
                           <TrendingUp className="w-3 h-3 mr-1" />
                           {destination}
